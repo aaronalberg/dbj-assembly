@@ -8,26 +8,70 @@ args = parser.parse_args()
 with open(args.reads) as reads_fh:
   reads = reads_fh.read().splitlines()
 
-nodes = []
+nodes = set()
 edges = []
 
-out = reads[0]
-isFirst = True
+kmers = []
+
+lefts = []
+rights = []
+
 for i in reads:
-    if isFirst:
-        isFirst = False
-        continue
-    out += i[-1]
+    
+
+    left = i[:-1]
+    right = i[1:]
+
+    kmers.append(left)
+    kmers.append(right)
+    edges.append((left,right))
+
+#     lefts.append(left)
+#     rights.append(right)
+
+#     nodes.add(left)
+#     nodes.add(right)
+
+# nodes = list(nodes)
+
+# for i in range(len(kmers)):
+#     for j in range(i + 1, len(kmers)):
+#         if i is j:
+#             continue
+
+#         k1 = kmers[i]
+#         k2 = kmers[j]
+#         print(k1[1:])
+#         if k1[1:] == k2[:-1]:
+#             edges.append((k1, k2))
+#         if k1[:-1] == k2[1:]:
+#             edges.append((k2, k1))
 
 
-    # left = i[:-1]
-    # right = i[1:]
-    # tup = (left, right)
-    # edges.append(tup)
+# print(nodes)
+# print(lefts)
+# print(rights)
 
-  
+
+    # edge = (left, right)
+    # nodes.add(left)
+    # nodes.add(right)
+    # edges.append((left, right))
 
 # print(reads[0][:-1])
 # print(reads[0][1:])
-# print(edges)
-print(out)
+
+print(edges)
+
+n = len(edges)
+for i in range(n):
+    for j in range(i + 1, n):
+        if i == j:
+            continue
+        right = edges[i][1]
+        left = edges[j][0]
+        if right == left:
+            edges.append((right, left))
+            
+print(edges)
+print(len(edges))
