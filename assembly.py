@@ -39,33 +39,36 @@ def dbg():
         print(-1)
         return
     
-    start = odds[0][0]
-    if odds[0][1] < odds[1][1]:
-        start = odds[1][0]
+    startNode = odds[1][0]
+    if G.out_degree(odds[1][0]) < G.in_degree(odds[1][0]):
+        startNode = odds[0][0]
     # print(start)
 
 
     # print(G.out_edges(start))
 
-    out = start
-    curr = start
+    output = startNode
+    currentNode = startNode
     while True:
-        edges = G.out_edges(curr)
+        edges = G.out_edges(currentNode)
 
         if len(edges) == 0:
             break
-        outs = [x[1] for x in edges]
-        if curr in outs:
-            out += curr[-1]
-            G.remove_edge(curr, curr)
+
+        outNodes = [x[1] for x in edges]
+        if currentNode in outNodes:
+            output += currentNode[-1]
+            G.remove_edge(currentNode, currentNode)
             continue
         
         nextnode = list(edges)[0]
-        oldcurr = curr
-        curr = nextnode[1]
-        out += curr[-1]
-        G.remove_edge(oldcurr, curr)
+        # print(list(edges))
+        oldcurr = currentNode
+        currentNode = nextnode[1]
+        output += currentNode[-1]
+        G.remove_edge(oldcurr, currentNode)
 
-    print(out)
+    print(output)
+    # print(len(output))
 
 dbg()
