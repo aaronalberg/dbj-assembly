@@ -1,6 +1,8 @@
 # de Bruijn assembly option
 import argparse
 import networkx as nx
+from networkx.algorithms.components.connected import is_connected
+from networkx.classes.function import to_undirected
 # import matplotlib.pyplot as plt
 
 
@@ -22,34 +24,27 @@ def dbg():
         edges.append((left,right))
         G.add_edge(left, right)
 
-    # print("bef")
-    # print(G.nodes)
-    # print("aft")
-
-    # print(G.degree())
-    # print("aft2")
 
     odds = []
     for i in G.degree():
         if i[1] % 2 == 1:
             odds.append(i)
 
-    # print(odds)
+    # Eulerian trail requires exactly 2 nodes of odd degree
     if len(odds) != 2:
         print(-1)
         return
     
+    # start with node that has more out edges than in edges
     startNode = odds[1][0]
     if G.out_degree(odds[1][0]) < G.in_degree(odds[1][0]):
         startNode = odds[0][0]
-    # print(start)
 
-
-    # print(G.out_edges(start))
 
     output = startNode
     currentNode = startNode
     while True:
+        G.remove_nodes_from(list(nx.isolates(G)))
         edges = G.out_edges(currentNode)
 
         if len(edges) == 0:
@@ -60,15 +55,27 @@ def dbg():
             output += currentNode[-1]
             G.remove_edge(currentNode, currentNode)
             continue
-        
-        nextnode = list(edges)[0]
-        # print(list(edges))
-        oldcurr = currentNode
-        currentNode = nextnode[1]
-        output += currentNode[-1]
-        G.remove_edge(oldcurr, currentNode)
+
+        for i in list(edges):
+            nextnode = i
+            oldcurr = currentNode
+            currentNode = nextnode[1]
+            G.remove_edge(oldcurr, currentNode)
+            G.remove_nodes_from(list(nx.isolates(G)))
+
+            # at the final node
+            if (nx.is_empty(G)):
+                output += currentNode[-1]
+                break
+
+            # if removed edge is a bridge, add it back and try the next edge
+            if not (nx.is_connected(G.copy().to_undirected())):
+                G.add_edge(oldcurr, currentNode)
+                currentNode = oldcurr
+            else:
+                output += currentNode[-1]
+                break
 
     print(output)
-    # print(len(output))
 
 dbg()
