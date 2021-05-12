@@ -1,5 +1,8 @@
 # de Bruijn assembly option
 import argparse
+import networkx as nx
+# import matplotlib.pyplot as plt
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument('reads')
@@ -8,70 +11,61 @@ args = parser.parse_args()
 with open(args.reads) as reads_fh:
   reads = reads_fh.read().splitlines()
 
-nodes = set()
-edges = []
+def dbg():
 
-kmers = []
+    G = nx.MultiDiGraph()
 
-lefts = []
-rights = []
+    edges = []
+    for i in reads:
+        left = i[:-1]
+        right = i[1:]
+        edges.append((left,right))
+        G.add_edge(left, right)
 
-for i in reads:
+    # print("bef")
+    # print(G.nodes)
+    # print("aft")
+
+    # print(G.degree())
+    # print("aft2")
+
+    odds = []
+    for i in G.degree():
+        if i[1] % 2 == 1:
+            odds.append(i)
+
+    # print(odds)
+    if len(odds) != 2:
+        print(-1)
+        return
     
-
-    left = i[:-1]
-    right = i[1:]
-
-    kmers.append(left)
-    kmers.append(right)
-    edges.append((left,right))
-
-#     lefts.append(left)
-#     rights.append(right)
-
-#     nodes.add(left)
-#     nodes.add(right)
-
-# nodes = list(nodes)
-
-# for i in range(len(kmers)):
-#     for j in range(i + 1, len(kmers)):
-#         if i is j:
-#             continue
-
-#         k1 = kmers[i]
-#         k2 = kmers[j]
-#         print(k1[1:])
-#         if k1[1:] == k2[:-1]:
-#             edges.append((k1, k2))
-#         if k1[:-1] == k2[1:]:
-#             edges.append((k2, k1))
+    start = odds[0][0]
+    if odds[0][1] < odds[1][1]:
+        start = odds[1][0]
+    # print(start)
 
 
-# print(nodes)
-# print(lefts)
-# print(rights)
+    # print(G.out_edges(start))
 
+    out = start
+    curr = start
+    while True:
+        edges = G.out_edges(curr)
 
-    # edge = (left, right)
-    # nodes.add(left)
-    # nodes.add(right)
-    # edges.append((left, right))
-
-# print(reads[0][:-1])
-# print(reads[0][1:])
-
-print(edges)
-
-n = len(edges)
-for i in range(n):
-    for j in range(i + 1, n):
-        if i == j:
+        if len(edges) == 0:
+            break
+        outs = [x[1] for x in edges]
+        if curr in outs:
+            out += curr[-1]
+            G.remove_edge(curr, curr)
             continue
-        right = edges[i][1]
-        left = edges[j][0]
-        if right == left:
-            edges.append((right, left))
-            
-print(edges)
-print(len(edges))
+        
+        nextnode = list(edges)[0]
+        oldcurr = curr
+        curr = nextnode[1]
+        out += curr[-1]
+        G.remove_edge(oldcurr, curr)
+
+    print(out)
+
+dbg()
